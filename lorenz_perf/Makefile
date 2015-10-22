@@ -1,10 +1,16 @@
-CXX = icpc
+# CXX = icpc
+# CC = icc
+OPTIMIZER = -fast -ipo
+CC = gcc
+CXX = g++
+OPTIMIZER = -O3
 
-CXXFLAGS = -I${CVODE_INCLUDE} -I${BOOST_ROOT} -I${ODEINT_ROOT} -fast -ipo -DNDEBUG -static
-LDFLAGS = -L${CVODE_LIB} -lsundials_cvode -lsundials_nvecserial -Wl,-rpath,/home/mario/sundials/lib
+CFLAGS = -I${CVODE_INCLUDE} -DNDEBUG -static ${OPTIMIZER}
+CXXFLAGS = -I${BOOST_ROOT} -I${ODEINT_ROOT} -DNDEBUG -static ${OPTIMIZER}
+LDFLAGS = -L${CVODE_LIB} -lsundials_cvode -lsundials_nvecserial -lm -Wl,-rpath,/home/mario/sundials/lib
 
-lorenz_cvode: lorenz_cvode.cpp
-	${CXX} ${CXXFLAGS} lorenz_cvode.cpp ${LDFLAGS} -o lorenz_cvode
+lorenz_cvode: lorenz_cvode.c
+	${CC} ${CFLAGS} lorenz_cvode.c ${LDFLAGS} -o lorenz_cvode
 
 lorenz_odeint: lorenz_odeint.cpp
 	${CXX} -std=c++0x ${CXXFLAGS} lorenz_odeint.cpp -o lorenz_odeint

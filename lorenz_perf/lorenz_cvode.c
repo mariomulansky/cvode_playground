@@ -1,4 +1,4 @@
-#include <iostream>
+#include <stdio.h>
 
 #include <cvode/cvode.h>             /* main integrator header file */
 #include <nvector/nvector_serial.h>  /* serial N_Vector types, fct. and macros */
@@ -13,16 +13,14 @@
 
 int rhs_calls = 0;
 
-int lorenz(realtype t, N_Vector y, N_Vector y_dot, void *)
+int lorenz(realtype t, N_Vector y, N_Vector y_dot, void *params)
 {
     rhs_calls++;
-    const realtype y0 = NV_Ith_S(y, 0);
-    const realtype y1 = NV_Ith_S(y, 1);
-    const realtype y2 = NV_Ith_S(y, 2);
 
-    NV_Ith_S(y_dot, 0) = SIGMA * ( y1 - y0 );
-    NV_Ith_S(y_dot, 1) = R * y0 - y1 - y0 * y2;
-    NV_Ith_S(y_dot, 2) = -B * y2 + y0 * y1;
+    // lorenz equations
+    NV_Ith_S(y_dot, 0) = SIGMA * ( NV_Ith_S(y, 1) - NV_Ith_S(y, 0) );
+    NV_Ith_S(y_dot, 1) = R * NV_Ith_S(y, 0) - NV_Ith_S(y, 1) - NV_Ith_S(y, 0) * NV_Ith_S(y, 2);
+    NV_Ith_S(y_dot, 2) = -B * NV_Ith_S(y, 2) + NV_Ith_S(y, 0) * NV_Ith_S(y, 1);
 
     return 0;
 }
@@ -35,6 +33,7 @@ int main()
     const realtype t_end = 100.0;
     const realtype dt = 1.0;
     const int steps = 100;
+    int m, t_iter;
     realtype t;
     realtype y0_tot = 0;
     N_Vector y;
@@ -43,7 +42,7 @@ int main()
 
     y = N_VNew_Serial(N);
 
-    for(int m=0; m<M; m++)
+    for(m=0; m<M; m++)
     {
         NV_Ith_S(y, 0) = 10.0;
         NV_Ith_S(y, 1) = 1.0;
@@ -60,9 +59,9 @@ int main()
 
         realtype t_out = t_start+dt;
         // main step iteration
-        for(int t_iter=0; t_iter < steps; t_iter++, t_out += dt)
+        for(t_iter=0; t_iter < steps; t_iter++, t_out += dt)
         {
-            int res = CVode(cvode_mem, t_out, y, &t, CV_NORMAL);
+            CVode(cvode_mem, t_out, y, &t, CV_NORMAL);
         }
 
         y0_tot += NV_Ith_S(y, 0);
@@ -70,6 +69,6 @@ int main()
     CVodeFree(&cvode_mem);
     N_VDestroy_Serial(y);
 
-    std::cout << y0_tot << std::endl;
-    std::cout << "rhs_calls: " << rhs_calls << std::endl;
+    printf("%.5f\n", y0_tot);
+    printf("rhs_calls: %d\n", rhs_calls);
 }
