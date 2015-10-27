@@ -38,15 +38,27 @@ struct lorenz
 
 };
 
+
+// to be as close to the behavior of CVODE, we add an observer that
+// just looks at the state type through a volatile to ensure nothing
+// is optimized out too much
+struct empty_observer
+{
+    void operator()(const state_type &x, const double t)
+    {
+        volatile double v = x[0];
+    }
+};
+
 int main(int argc, char **argv)
 {
     double x0_final = 0.0;
     lorenz rhs(sigma, R, b);
+    state_type x = {{ 10.0 , 1.0 , 1.0 }}; // initial conditions
     for(int m=0; m<M; ++m)
     {
-        state_type x = {{ 10.0 , 1.0 , 1.0 }}; // initial conditions
         integrate_const(make_dense_output(1E-6, 1E-6, runge_kutta_dopri5<state_type>()),
-                        std::ref(rhs), x, t_start, t_end, dt);
+                        std::ref(rhs), x, t_start, t_end, dt, empty_observer());
         x0_final += x[0];
     }
     std::cout << x0_final << std::endl;

@@ -42,12 +42,12 @@ int main()
 
     y = N_VNew_Serial(N);
 
+    NV_Ith_S(y, 0) = 10.0;
+    NV_Ith_S(y, 1) = 1.0;
+    NV_Ith_S(y, 2) = 1.0;
+
     for(m=0; m<M; m++)
     {
-        NV_Ith_S(y, 0) = 10.0;
-        NV_Ith_S(y, 1) = 1.0;
-        NV_Ith_S(y, 2) = 1.0;
-
         if( m == 0 )
         {
             CVodeInit(cvode_mem, lorenz, t_start, y);
@@ -71,4 +71,6 @@ int main()
 
     printf("%.5f\n", y0_tot);
     printf("rhs_calls: %d\n", rhs_calls);
+
+    return 0;
 }
